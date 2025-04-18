@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Keyword Search in Documents</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Keyword Search in Large Documents</h1>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+            <label>Upload File (.txt, .pdf, .docx):</label>
+            <input type="file" name="document" required><br>
+
+            <label>Keywords (comma-separated):</label>
+            <input type="text" name="pattern" required placeholder="e.g. python, search"><br>
+
+            <button type="submit">Search</button>
+        </form>
+
+        {% if file_name %}
+            <h3 style="color: green; text-align: center;">File Uploaded: {{ file_name }}</h3>
+        {% endif %}
+
+        {% if keywords %}
+            <h3 style="text-align: center;">Entered Keywords: {{ keywords | join(', ') }}</h3>
+        {% endif %}
+
+        {% if algorithm_results %}
+            {% set total_matches = namespace(value=0) %}
+            {% for algo in algorithm_results %}
+                {% set total_matches.value = total_matches.value + (algo.matches | length) %}
+            {% endfor %}
+
+            {% if total_matches.value > 0 %}
+                <h2>Algorithm Comparison</h2>
+                <div class="cards">
+                    {% for algo in algorithm_results %}
+                        <div class="card">
+                            <h3>{{ algo.name }}</h3>
+                            <p><strong>Total Matches:</strong> {{ algo.matches | length }}</p>
+                            <p><strong>Execution Time:</strong> {{ algo.time }} ms</p>
+                            <p><strong>Memory Used:</strong> {{ algo.memory }} KB</p>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="conclusion">
+                    <h3>Fastest Algorithm</h3>
+                    {% if fastest_algorithm %}
+                        <p><strong>{{ fastest_algorithm.name }}</strong> with execution time of {{ fastest_algorithm.time }} ms.</p>
+                    {% endif %}
+
+                    <h3>Least Memory Usage</h3>
+                    {% if least_memory_algorithm %}
+                        <p><strong>{{ least_memory_algorithm.name }}</strong> with memory usage of {{ least_memory_algorithm.memory }} KB.</p>
+                    {% endif %}
+                </div>
+
+                <h2>Document Preview (Matched Lines)</h2>
+                <div class="preview-box">
+                    {% for line in preview_lines %}
+                        <div class="line">{{ line|safe }}</div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <!-- <div style="background-color: #ffd5cd; border: 1px solid #ffd0ba; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center; color: #851704; font-weight: 600;">
+                    <p><strong>No matches found</strong> for the entered keyword(s): {{ keywords | join(', ') }}.</p>
+                </div> -->
+            {% endif %}
+
+            {% if unmatched_keywords and unmatched_keywords | length > 0 %}
+                <div class="not-found-msg" style="margin-top: 20px; padding: 15px; border-radius: 8px; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba;">
+                    <p><strong>The following keyword(s) were not found:</strong> {{ unmatched_keywords | join(', ') }}</p>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+</body>
+</html>
